@@ -5,11 +5,13 @@ defmodule Marvin.Config do
   def load(_input) do
     %Config{
       duration: 5,
-      scenarios: %{
-        name: "yo",
-        concurrency: 3,
-        endpoint: {:get, "http://localhost:3000"}
-      }
+      scenarios: [
+        %{
+          name: "yo",
+          concurrency: 3,
+          endpoint: {:get, "http://localhost:3000"}
+        }
+      ]
     }
   end
 end

@@ -1,40 +1,52 @@
 defmodule Marvin do
-  alias Marvin.Timer
   alias Marvin.Runner
   alias Marvin.Config
   alias Marvin.Reporter
   alias Marvin.HttpClient
+  alias Marvin.{Runner, Config, Reporter, HttpClient}
 
   def run(config) do
-    setup_program(config)
-    run_program()
-    start_countdown()
-    print_result()
+    fake_config = Config.load(config)
+
+    setup_program(fake_config.scenarios)
+    start_time = start_program()
+    countdown(fake_config.duration)
+    stop_time = stop_program()
+    print_result(start_time, stop_time)
   end
 
-  def setup_program(config) do
-    config = Config.load(config)
-
+  def setup_program(scenarios) do
     Supervisor.start_link(
       [
-        {Timer, config.duration},
-        {Runner, [config.scenarios]},
+        {Runner, []},
         {Reporter, []},
         HttpClient.child_spec()
       ],
       strategy: :one_for_one
     )
+
+    Runner.setup_workers(scenarios)
   end
 
-  def run_program() do
+  def start_program() do
     Runner.run_workers()
+
+    :erlang.system_time() / 1000
   end
 
-  def start_countdown() do
-    Timer.countdown(Runner, Reporter)
+  def countdown(duration) do
+    :timer.sleep(duration * 1000)
   end
 
-  defp print_result() do
-    Reporter.print_result()
+  def stop_program() do
+    # TODO: config proper timeout value (before the :shutdown command becomes :kill)
+    # TODO: Ensure it's entire shut down
+    Runner.stop()
+
+    :erlang.system_time() / 1000
+  end
+
+  def print_result(start_time, stop_time) do
+    Reporter.print_result(start_time, stop_time)
   end
 end

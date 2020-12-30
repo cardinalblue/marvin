@@ -4,8 +4,6 @@ defmodule Marvin.Reporter do
   @spec start_link(any) :: {:error, any} | {:ok, pid}
   def start_link(_) do
     init_state = %{
-      start: nil,
-      finish: nil,
       n_failed_requests: 0,
       n_successful_requests: 0
     }
@@ -13,23 +11,16 @@ defmodule Marvin.Reporter do
     Agent.start_link(fn -> init_state end, name: __MODULE__)
   end
 
-  def log_duration(start: start, finish: finish) do
-    update_state(:start, start)
-    update_state(:finish, finish)
-  end
-
   def log_result(successful: successful, failed: failed) do
     increase_count(:n_successful_requests, successful)
     increase_count(:n_failed_requests, failed)
   end
 
-  def print_result() do
+  def print_result(start, stop) do
     n_successful_requests = get_state(:n_successful_requests)
     n_failed_requests = get_state(:n_failed_requests)
 
-    start_time = get_state(:start)
-    finish_time = get_state(:finish)
-    duration = ((finish_time - start_time) / 1_000_000) |> Float.round(2)
+    duration = ((stop - start) / 1_000_000) |> Float.round(2)
 
     rps = (n_successful_requests / duration) |> round
     rpm = (rps * 60 / 1000) |> Float.round(1)
