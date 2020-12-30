@@ -1,0 +1,13 @@
+{
+  "duration": 5,
+  "scenarios": [
+    {
+      "name": "test",
+      "concurrency": 3,
+      "endpoint": {
+        "url": "http://localhost:3000",
+        "method": "get"
+      }
+    }
+  ]
+}

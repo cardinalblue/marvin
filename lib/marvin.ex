@@ -1,16 +1,12 @@
 defmodule Marvin do
   alias Marvin.Runner
-  alias Marvin.Config
   alias Marvin.Reporter
   alias Marvin.HttpClient
-  alias Marvin.{Runner, Config, Reporter, HttpClient}
 
   def run(config) do
-    fake_config = Config.load(config)
-
-    setup_program(fake_config.scenarios)
+    setup_program(config.scenarios)
     start_time = start_program()
-    countdown(fake_config.duration)
+    countdown(config.duration)
     stop_time = stop_program()
     print_result(start_time, stop_time)
   end

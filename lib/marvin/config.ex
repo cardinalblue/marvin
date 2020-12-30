@@ -1,17 +1,26 @@
 defmodule Marvin.Config do
-  alias Marvin.Config
   defstruct [:scenarios, :duration]
 
-  def load(_input) do
-    %Config{
-      duration: 5,
-      scenarios: [
-        %{
-          name: "yo",
-          concurrency: 3,
-          endpoint: {:get, "http://localhost:3000"}
-        }
-      ]
-    }
+  def load(json_input) do
+    json_input
+    |> Jason.decode!()
+    |> normalize
+  end
+
+  defp normalize(%{"duration" => duration, "scenarios" => scenarios}) do
+    normalized_scenarios =
+      scenarios
+      |> Enum.map(fn %{"name" => name, "concurrency" => con, "endpoint" => endpoint} ->
+        %{name: name, concurrency: con, endpoint: normalize_endpoint(endpoint)}
+      end)
+
+    %{duration: duration, scenarios: normalized_scenarios}
+  end
+
+  defp normalize_endpoint(endpoint) do
+    case endpoint["method"] do
+      "get" -> {:get, endpoint["url"]}
+      "post" -> {:post, endpoint["url"], endpoint["body"]}
+    end
   end
 end
