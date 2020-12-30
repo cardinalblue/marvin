@@ -1,5 +1,5 @@
 defmodule Marvin.Runner do
-  use Supervisor, restart: :transient
+  use DynamicSupervisor, restart: :transient
   alias Marvin.Worker
   alias Marvin.Reporter
   alias Marvin.HttpClient
@@ -9,27 +9,36 @@ defmodule Marvin.Runner do
           endpoint: Marvin.HttpClient.endpoint()
         }
 
-  def start_link(scenarios) do
-    children =
-      scenarios
-      |> Enum.flat_map(fn scenario ->
-        Enum.map(1..scenario.concurrency, fn i ->
-          args = [
-            id: "#{scenario.name}_#{i}" |> String.to_atom(),
-            reporter: Reporter,
-            endpoint: scenario.endpoint,
-            http_client: HttpClient
-          ]
+  def start_link(init_args) do
+    DynamicSupervisor.start_link(__MODULE__, init_args, name: __MODULE__)
+  end
 
-          {Marvin.Worker, args}
-        end)
-      end)
+  def setup_workers(scenarios) do
+    scenarios
+    |> build_worker_specs()
+    |> Task.async_stream(&DynamicSupervisor.start_child(__MODULE__, &1))
+    |> Enum.to_list()
+  end
 
-    Supervisor.start_link(__MODULE__, children, name: __MODULE__)
+  defp build_worker_specs(scenarios) do
+    Enum.flat_map(scenarios, fn scenario ->
+      Enum.map(1..scenario.concurrency, &build_worker_spec(&1, scenario))
+    end)
+  end
+
+  defp build_worker_spec(id, scenario) do
+    args = [
+      id: "#{scenario.name}_#{id}" |> String.to_atom(),
+      reporter: Reporter,
+      endpoint: scenario.endpoint,
+      http_client: HttpClient
+    ]
+
+    {Marvin.Worker, args}
   end
 
   def run_workers() do
-    Supervisor.which_children(__MODULE__)
+    DynamicSupervisor.which_children(__MODULE__)
     |> Enum.map(fn {_id, pid, _, _} -> pid end)
     |> Task.async_stream(&Worker.run_loop/1)
     |> Stream.run()
@@ -44,12 +53,12 @@ defmodule Marvin.Runner do
   if the child process does not terminate in this interval.
   """
   def stop() do
-    Supervisor.stop(__MODULE__, :shutdown)
+    DynamicSupervisor.stop(__MODULE__, :shutdown)
   end
 
   @impl true
-  def init(children) do
-    Supervisor.init(children, strategy: :one_for_one)
+  def init(_) do
+    DynamicSupervisor.init(strategy: :one_for_one)
   end
 
   def generate_random_id() do
