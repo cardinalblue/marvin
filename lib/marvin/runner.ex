@@ -1,18 +1,16 @@
 defmodule Marvin.Runner do
   use DynamicSupervisor, restart: :transient
   alias Marvin.Worker
+  alias Marvin.Config
   alias Marvin.Reporter
   alias Marvin.HttpClient
 
-  @type scenario :: %{
-          concurrency: number(),
-          endpoint: Marvin.HttpClient.endpoint()
-        }
-
+  @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(init_args) do
     DynamicSupervisor.start_link(__MODULE__, init_args, name: __MODULE__)
   end
 
+  @spec setup_workers([Config.scenario()]) :: [:ok]
   def setup_workers(scenarios) do
     scenarios
     |> build_worker_specs()
@@ -22,11 +20,11 @@ defmodule Marvin.Runner do
 
   defp build_worker_specs(scenarios) do
     Enum.flat_map(scenarios, fn scenario ->
-      Enum.map(1..scenario.concurrency, &build_worker_spec(&1, scenario))
+      Enum.map(1..scenario.concurrency, &worker_spec(&1, scenario))
     end)
   end
 
-  defp build_worker_spec(id, scenario) do
+  defp worker_spec(id, scenario) do
     args = [
       id: "#{scenario.name}_#{id}" |> String.to_atom(),
       reporter: Reporter,
@@ -37,6 +35,7 @@ defmodule Marvin.Runner do
     {Marvin.Worker, args}
   end
 
+  @spec run_workers :: :ok
   def run_workers() do
     __MODULE__
     |> DynamicSupervisor.which_children()
@@ -53,6 +52,7 @@ defmodule Marvin.Runner do
   The supervisor will abruptly terminates the child with reason :kill
   if the child process does not terminate in this interval.
   """
+  @spec stop :: nil
   def stop() do
     children =
       __MODULE__

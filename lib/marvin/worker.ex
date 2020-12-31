@@ -5,7 +5,7 @@ defmodule Marvin.Worker do
 
   @type state :: %{
           reporter: term,
-          endpoint: Marvin.HttpClient.endpoint(),
+          endpoint: Marvin.Config.endpoint(),
           http_client: term,
           n_failed: number,
           n_successful: number
@@ -25,6 +25,7 @@ defmodule Marvin.Worker do
   # Client
   # -------------------------------------------------------------
 
+  @spec start_link(any) :: :ignore | {:error, any} | {:ok, pid}
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
   end
@@ -34,6 +35,7 @@ defmodule Marvin.Worker do
     send(worker, :run_loop)
   end
 
+  @spec get_stats(atom | pid) :: any
   def get_stats(worker) do
     GenServer.call(worker, :get_stats)
   end
@@ -44,6 +46,8 @@ defmodule Marvin.Worker do
 
   @impl true
   def init(id: id, reporter: reporter, endpoint: endpoint, http_client: http_client) do
+    # This is important to trigger the terminate/2 callback.
+    # We rely on it to send results to Reporter.
     Process.flag(:trap_exit, true)
     Logger.info("Worker #{id} initiating")
 

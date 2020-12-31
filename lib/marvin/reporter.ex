@@ -11,13 +11,15 @@ defmodule Marvin.Reporter do
     Agent.start_link(fn -> init_state end, name: __MODULE__)
   end
 
+  @spec log_result([{:failed, non_neg_integer()} | {:successful, non_neg_integer()}, ...]) :: :ok
   def log_result(successful: successful, failed: failed) do
     increase_count(:n_successful_requests, successful)
     increase_count(:n_failed_requests, failed)
   end
 
+  @spec print_result(non_neg_integer(), non_neg_integer()) :: :ok
   def print_result(start, stop) do
-    ensure_logs_all_collected
+    ensure_logs_all_collected()
     n_successful_requests = get_state(:n_successful_requests)
     n_failed_requests = get_state(:n_failed_requests)
 

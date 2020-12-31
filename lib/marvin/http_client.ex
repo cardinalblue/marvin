@@ -1,10 +1,9 @@
 defmodule Marvin.HttpClient do
+  alias Marvin.Config
   @default_headers [{"Content-Type", "application/json"}]
   @timeout_settings [pool_timeout: 20000, receive_timeout: 20000]
 
-  @type endpoint :: {:get, binary | URI.t()} | {:post, binary | URI.t(), nil | iodata()}
-
-  @callback request(endpoint) :: :ok | {:error, [{atom, binary}, ...]}
+  @callback request(Config.endpoint()) :: :ok | {:error, [{atom, binary}, ...]}
 
   def child_spec do
     {Finch,
@@ -15,7 +14,7 @@ defmodule Marvin.HttpClient do
      }}
   end
 
-  @spec request(endpoint) :: :ok | {:error, [{atom, binary}, ...]}
+  @spec request(Config.endpoint()) :: :ok | {:error, [{atom, binary}, ...]}
   def request({:get, path}) do
     :get
     |> Finch.build(path, @default_headers)
