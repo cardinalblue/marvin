@@ -8,7 +8,7 @@
 $ brew install elixir
 ```
 
-2. Downlaod the executable `marvin` at the project root
+2. Download the executable `marvin` at the project root
 
 3. Create a config file
 
@@ -55,3 +55,15 @@ In case you just came upon this project and is wondering why Marvin, instead of 
 ## Contributing
 
 This is initially an internal project at PicCollage. Recently we had some time to make an open-source version of it–but just enough time to make it so. This is the MVP, there are obviously much room for improvement. If you are intrigued or if you like Elixir or if you find any bugs (I guarantee you will), please fix it yourself (yup) AND/OR let us know! 
+
+
+
+## TODOs (unordered)
+
+- [ ] [Test] Write them
+- [ ] [Doc] Structure overview
+- [ ] [Feat] Use Telemetry
+- [ ] [Feat] Report intermediate results at intervals besides at the end
+- [ ] [Feat] Better error handling
+- [ ] [Feat] Print relevant system information at the start of program
+- [ ] [Fix] Enforce metrics reporting before workers shutdown
