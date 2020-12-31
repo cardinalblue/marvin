@@ -17,6 +17,7 @@ defmodule Marvin.Reporter do
   end
 
   def print_result(start, stop) do
+    ensure_logs_all_collected
     n_successful_requests = get_state(:n_successful_requests)
     n_failed_requests = get_state(:n_failed_requests)
 
@@ -44,5 +45,14 @@ defmodule Marvin.Reporter do
   defp increase_count(key, count) do
     old_count = get_state(key)
     update_state(key, old_count + count)
+  end
+
+  defp ensure_logs_all_collected do
+    {:message_queue_len, msg_count} = Process.info(self(), :message_queue_len)
+
+    if msg_count > 0 do
+      :timer.sleep(100)
+      ensure_logs_all_collected()
+    end
   end
 end
