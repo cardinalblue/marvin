@@ -17,7 +17,7 @@ defmodule Marvin.Worker do
       start: {__MODULE__, :start_link, [args]},
       type: :worker,
       restart: :transient,
-      shutdown: 500
+      shutdown: 3000
     }
   end
 
@@ -43,8 +43,6 @@ defmodule Marvin.Worker do
   # -------------------------------------------------------------
 
   @impl true
-  # @spec init([{:endpoint, Marvin.HttpClient.endpoint} | {:reporter, any} | {:http_client, any}, ...]) ::
-  #         {:ok, state}
   def init(id: id, reporter: reporter, endpoint: endpoint, http_client: http_client) do
     Process.flag(:trap_exit, true)
     Logger.info("Worker #{id} initiating")

@@ -35,8 +35,6 @@ defmodule Marvin do
   end
 
   def stop_program() do
-    # TODO: config proper timeout value (before the :shutdown command becomes :kill)
-    # TODO: Ensure it's entire shut down
     Runner.stop()
 
     :erlang.system_time() / 1000

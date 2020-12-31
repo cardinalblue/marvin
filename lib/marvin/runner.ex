@@ -38,7 +38,8 @@ defmodule Marvin.Runner do
   end
 
   def run_workers() do
-    DynamicSupervisor.which_children(__MODULE__)
+    __MODULE__
+    |> DynamicSupervisor.which_children()
     |> Enum.map(fn {_id, pid, _, _} -> pid end)
     |> Task.async_stream(&Worker.run_loop/1)
     |> Stream.run()
@@ -53,7 +54,14 @@ defmodule Marvin.Runner do
   if the child process does not terminate in this interval.
   """
   def stop() do
+    children =
+      __MODULE__
+      |> DynamicSupervisor.which_children()
+      |> Enum.map(fn {_id, pid, _, _} -> pid end)
+
     DynamicSupervisor.stop(__MODULE__, :shutdown)
+
+    ensure_all_stopped(children)
   end
 
   @impl true
@@ -61,9 +69,10 @@ defmodule Marvin.Runner do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def generate_random_id() do
-    :rand.uniform(1_000_000)
-    |> Integer.to_string()
-    |> String.to_atom()
+  defp ensure_all_stopped(children) do
+    if Enum.any?(children, &Process.alive?/1) do
+      :timer.sleep(100)
+      ensure_all_stopped(children)
+    end
   end
 end
