@@ -19,7 +19,7 @@ $ brew install elixir
   "duration": 5,
   "scenarios": [
     {
-      "name": "test", // to be used to identify workers
+      "name": "test",
       "concurrency": 3,
       "endpoint": {
         "url": "http://localhost:3000",
@@ -60,10 +60,10 @@ This is initially an internal project at PicCollage. Recently we had some time t
 
 ## TODOs (unordered)
 
-- [ ] [Test] Write them
-- [ ] [Doc] Structure overview
+- [ ] [Test] Complete unit tests
+- [ ] [Doc] Draw structure overview diagram
 - [ ] [Feat] Use Telemetry
 - [ ] [Feat] Report intermediate results at intervals besides at the end
-- [ ] [Feat] Better error handling
-- [ ] [Feat] Print relevant system information at the start of program
+- [ ] [Feat] Handle errors
+- [ ] [Feat] Print system information at the start of program
 - [ ] [Fix] Enforce metrics reporting before workers shutdown
